@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Symbol};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Symbol, Vec, vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -42,7 +42,7 @@ impl MaliciousContract {
         let result = env.try_invoke_contract::<i128, soroban_sdk::Error>(
             &state.vault_contract,
             &Symbol::new(&env, "claim"),
-            (state.vault_id.clone(),)
+            vec![&env, state.vault_id.clone()]
         );
 
         match result {
@@ -69,7 +69,7 @@ impl MaliciousContract {
         let result = env.try_invoke_contract::<(), soroban_sdk::Error>(
             &state.vault_contract,
             &Symbol::new(&env, "revoke"),
-            (state.vault_id.clone(),)
+            vec![&env, state.vault_id.clone()]
         );
 
         match result {
@@ -96,14 +96,7 @@ impl MaliciousContract {
         let result = env.try_invoke_contract::<Address, soroban_sdk::Error>(
             &state.vault_contract,
             &Symbol::new(&env, "create_vault"),
-            (
-                beneficiary,
-                1000i128,  // total_amount
-                1000u64,   // cliff_date
-                1000u64,   // vesting_start
-                1000u64,   // vesting_duration
-                true,      // revocable
-            )
+            vec![&env, beneficiary, 1000i128, 1000u64, 1000u64, 1000u64, true]
         );
 
         match result {

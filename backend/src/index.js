@@ -1782,31 +1782,7 @@ app.get("/api/token/:address/distribution", async (req, res) => {
     });
   }
 });
-  group: ["tag"],
-  raw: true,
-    });
 
-// Format the response
-const result = distribution
-  .filter((item) => item.tag) // Filter out null tags
-  .map((item) => ({
-    label: item.tag,
-    amount: parseFloat(item.total_amount),
-  }))
-  .sort((a, b) => b.amount - a.amount); // Sort by amount descending
-
-res.json({
-  success: true,
-  data: result,
-});
-  } catch (error) {
-  console.error("Error fetching token distribution:", error);
-  res.status(500).json({
-    success: false,
-    error: error.message,
-  });
-}
-});
 
 // Dividend Distribution Endpoints
 // POST /api/admin/dividend/round - Create new dividend round
@@ -2564,16 +2540,15 @@ const startServer = async () => {
       console.log(`REST API available at: http://localhost:${PORT}`);
       if (graphQLServer) {
         console.log(`GraphQL API available at: http://localhost:${PORT}/graphql`);
-      });
-  } try 
-      catch (error) {
+      }
+    });
+  } catch (error) {
     console.error('Unable to start server:', error);
     process.exit(1);
   }
 };
 
 startServer();
-    };
 
 // Initialize Vault Balance Monitoring Job
 try {
@@ -2628,36 +2603,37 @@ setInterval(async () => {
 }, 15000);
 
 // Initialize Soroban Event Poller Service
-try {
-  const SorobanEventPollerService = require('./services/sorobanEventPollerService');
-  const SorobanEventProcessor = require('./services/sorobanEventProcessor');
+(async () => {
+  try {
+    const SorobanEventPollerService = require('./services/sorobanEventPollerService');
+    const SorobanEventProcessor = require('./services/sorobanEventProcessor');
 
-  const sorobanEventPoller = new SorobanEventPollerService({
-    pollInterval: parseInt(process.env.SOROBAN_POLL_INTERVAL) || 30000,
-    batchSize: parseInt(process.env.SOROBAN_BATCH_SIZE) || 100,
-    contractAddresses: process.env.SOROBAN_CONTRACT_ADDRESSES ?
-      process.env.SOROBAN_CONTRACT_ADDRESSES.split(',') : []
-  });
+    const sorobanEventPoller = new SorobanEventPollerService({
+      pollInterval: parseInt(process.env.SOROBAN_POLL_INTERVAL) || 30000,
+      batchSize: parseInt(process.env.SOROBAN_BATCH_SIZE) || 100,
+      contractAddresses: process.env.SOROBAN_CONTRACT_ADDRESSES ?
+        process.env.SOROBAN_CONTRACT_ADDRESSES.split(',') : []
+    });
 
-  const sorobanEventProcessor = new SorobanEventProcessor({
-    batchSize: parseInt(process.env.SOROBAN_PROCESSOR_BATCH_SIZE) || 50,
-    processingDelay: parseInt(process.env.SOROBAN_PROCESSOR_DELAY) || 1000
-  });
+    const sorobanEventProcessor = new SorobanEventProcessor({
+      batchSize: parseInt(process.env.SOROBAN_PROCESSOR_BATCH_SIZE) || 50,
+      processingDelay: parseInt(process.env.SOROBAN_PROCESSOR_DELAY) || 1000
+    });
 
-  // Start both services
-  await sorobanEventPoller.start();
-  await sorobanEventProcessor.startProcessing();
+    // Start both services
+    await sorobanEventPoller.start();
+    await sorobanEventProcessor.startProcessing();
 
-  console.log("Soroban Event Poller and Processor services started successfully.");
+    console.log("Soroban Event Poller and Processor services started successfully.");
 
-  // Store services globally for access in routes
-  global.sorobanEventPoller = sorobanEventPoller;
-  global.sorobanEventProcessor = sorobanEventProcessor;
-
-} catch (sorobanError) {
-  console.error("Failed to initialize Soroban Event services:", sorobanError);
-  console.log("Continuing without Soroban event indexing...");
-}
+    // Store services globally for access in routes
+    global.sorobanEventPoller = sorobanEventPoller;
+    global.sorobanEventProcessor = sorobanEventProcessor;
+  } catch (sorobanError) {
+    console.error("Failed to initialize Soroban Event services:", sorobanError);
+    console.log("Continuing without Soroban event indexing...");
+  }
+})();
 
 // Start HTTP server
 httpServer.listen(PORT, () => {
@@ -2669,11 +2645,7 @@ httpServer.listen(PORT, () => {
     );
   }
 });
-  } catch (error) {
-  console.error("Unable to start server:", error);
-  process.exit(1);
-}
-};
+
 
 // ✅ Only start once if run directly
 if (require.main === module) {
